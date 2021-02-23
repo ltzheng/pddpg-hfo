@@ -2,21 +2,16 @@ import os
 import argparse
 import time
 from utils import configure_agent, compute_n_step_returns
-# from utils.soccer_domain import SoccerScaledParameterisedActionWrapper
 from envs.soccer_offense import SoccerOffenseEnv
 from envs.soccer_goalie import SoccerGoalieEnv
-# from gym.wrappers import Monitor
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import hfo_py
 from agents.random_agent import RandomAgent
-# from agents.ppo_agent import PPOAgent
 from agents.pddpg_agent import PDDPGAgent
 from agents.mapddpg_agent import MAPDDPGAgent
 from envs import offense_mid_action, defense_mid_action, goalie_mid_action
-# from utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
-# from utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
 from utils.redis_manager import connect_redis, query_all_obs_actions, sync_agent_obs_actions, sync_agent_policy
 
 
@@ -36,16 +31,12 @@ def make_env(player, server_port, team, scale_actions):
         env = SoccerGoalieEnv(hfo)
     else:
         raise ValueError('Wrong player type')
-    # env = ScaledStateWrapper(env)  # already scaled
-    # if scale_actions:
-    #     env = SoccerScaledParameterisedActionWrapper(env)
     return env
 
 
 class Learner(object):
     def __init__(self, agent_type, tensorboard_dir, save_dir=None, player='offense', pretrained=None,
                  seed=1, episodes=20000, server_port=6000, max_steps=15000, save_freq=500, start=0):
-        # super(Actor(), self).__init__()
         if player == 'offense':
             self.team = 'base_left'
             self.mid_action = offense_mid_action
@@ -66,11 +57,7 @@ class Learner(object):
         self.tensorboard_dir = os.path.join('./tensorboard-log', tensorboard_dir)
         self.pretrained = pretrained
         self.start = start
-
         self.env = make_env(player, self.server_port, self.team, self.scale_actions)
-        # # For test
-        # import gym
-        # self.env = gym.make('CartPole-v0')
 
         # configure redis
         self.redis_instance = connect_redis()
@@ -78,9 +65,6 @@ class Learner(object):
         self.redis_instance.sadd('teammates', self.env.unum)
         print('Number of teammates:', self.redis_instance.scard('teammates'))
 
-        # # TODO: how to know the unums and actions of opponents?
-        # self.redis_instance.rpush('opponents', self.env.unum)
-        # print(self.redis_instance.llen('opponents'))
         if agent_type == 'PDDPG':
             self.agent = PDDPGAgent(self.env.observation_space, self.env.action_space,
                                     actor_kwargs={'hidden_layers': [1024, 512, 256, 256, 128, 128],
@@ -141,8 +125,6 @@ class Learner(object):
             raise NotImplementedError
 
         self.writer = SummaryWriter(self.tensorboard_dir)
-        # self.local_steps_per_episode = 15000
-        # self.local_steps_per_episode = int(steps_per_epoch / num_procs())
         print('Agent:', self.agent)
 
     def load_model(self, dir, i):
@@ -164,9 +146,6 @@ class Learner(object):
         self.all_agents = list(self.redis_instance.smembers('teammates'))
         self.all_agents.sort()
 
-        # Sync params across agents
-        # sync_params(ac)
-
         # Prepare for interaction with environment
         start_time = time.time()
 
@@ -182,70 +161,6 @@ class Learner(object):
         #
         #             next_obs, reward, terminal, info = self.env.step(action)
         #             obs = next_obs
-
-        # elif isinstance(self.agent, PPOAgent):
-        #     # # Special function to avoid certain slowdowns from PyTorch + MPI combo.
-        #     # setup_pytorch_for_mpi()
-        #
-        #     # # Sync params across processes
-        #     # sync_params(ac)
-        #
-        #     for i in range(self.episodes):
-        #         obs, ep_ret, ep_len = self.env.reset(), 0, 0
-        #         obs = np.array(obs, dtype=np.float32, copy=False)
-        #
-        #         for t in range(self.local_steps_per_episode):
-        #             a, v, logp = self.agent.ac.step(torch.as_tensor(obs, dtype=torch.float32))
-        #             # action = mid_action(a)
-        #             next_obs, reward, status, _ = self.env.step(a)
-        #             ep_ret += reward
-        #             ep_len += 1
-        #
-        #             self.agent.buf.store(obs, a, reward, v, logp)
-        #             obs = next_obs
-        #
-        #             timeout = ep_len == 1000
-        #             terminal = status or timeout
-        #             epoch_ended = t == self.local_steps_per_episode - 1
-        #
-        #             if terminal or epoch_ended:
-        #                 if epoch_ended and not terminal:
-        #                     print('Warning: trajectory cut off by epoch at %d steps.' % ep_len, flush=True)
-        #                 # if trajectory didn't reach terminal state, bootstrap value target
-        #                 if timeout or epoch_ended:
-        #                     _, v, _ = self.agent.ac.step(torch.as_tensor(obs, dtype=torch.float32))
-        #                 else:
-        #                     v = 0
-        #                 self.agent.buf.finish_path(v)
-        #                 if terminal:
-        #                     #     # only save EpRet / EpLen if trajectory finished
-        #                     #     logger.store(EpRet=ep_ret, EpLen=ep_len)
-        #                     self.writer.add_scalar('Epoch Return', ep_ret, i)
-        #                 obs, ep_ret, ep_len = self.env.reset(), 0, 0
-        #
-        #             # timeout = (ep_len == self.local_steps_per_episode)
-        #             # terminal = (status != hfo_py.IN_GAME) or timeout
-        #             # epoch_ended = (t == self.local_steps_per_episode - 1)
-        #             #
-        #             # if terminal or epoch_ended:
-        #             #     if epoch_ended and not terminal:
-        #             #         print('Warning: trajectory cut off by epoch at %d steps.' % ep_len, flush=True)
-        #             #     # if trajectory didn't reach terminal state, bootstrap value target
-        #             #     if timeout or epoch_ended:
-        #             #         _, v, _ = self.agent.ac.step(torch.as_tensor(obs, dtype=torch.float32))
-        #             #     else:
-        #             #         v = 0
-        #             #     self.agent.buf.finish_path(v)
-        #             #     if terminal:
-        #             #         break
-        #
-        #         # self.writer.add_scalar('Episode Return', ep_ret, i)
-        #
-        #         # # Save model
-        #         # if (epoch % self.save_freq == 0) or (epoch == epochs-1):
-        #         #     logger.save_state({'env': env}, None)
-        #
-        #         self.agent.update()
 
         n_step_returns = True
         update_ratio = 0.1
@@ -282,18 +197,6 @@ class Learner(object):
                 obs = np.array(obs, dtype=np.float32, copy=False)
                 episode_reward = 0.
                 transitions = []
-
-                # # extract teammates features
-                # teammates_num = self.env.hfo.getNumTeammates()
-                # opponents_num = self.env.hfo.getNumOpponents()
-                # teammates_unum = obs[58 + 8 * (teammates_num + opponents_num):  # problem 7, 11 to 0.07, -1.0?
-                #                        58 + 9 * teammates_num + 8 * opponents_num]
-                # print('teammates_num:', teammates_num)
-                # teammate_features = {}
-                # for k, teammates in enumerate(teammates_unum):
-                #     teammate_features[teammates] = obs[58 + k * teammates_num:58 + k * teammates_num + 8]
-                # print('teammate_features:', teammate_features)
-                # # opponent_features = {}
 
                 # get discrete action and continuous parameters
                 act, act_param, all_actions, all_action_parameters = self.agent.act(obs)
@@ -378,18 +281,6 @@ class Learner(object):
                 episode_reward = 0.
                 transitions = []
 
-                # # extract teammates features
-                # teammates_num = self.env.hfo.getNumTeammates()
-                # opponents_num = self.env.hfo.getNumOpponents()
-                # teammates_unum = obs[58 + 8 * (teammates_num + opponents_num):  # problem 7, 11 to 0.07, -1.0?
-                #                        58 + 9 * teammates_num + 8 * opponents_num]
-                # print('teammates_num:', teammates_num)
-                # teammate_features = {}
-                # for k, teammates in enumerate(teammates_unum):
-                #     teammate_features[teammates] = obs[58 + k * teammates_num:58 + k * teammates_num + 8]
-                # print('teammate_features:', teammate_features)
-                # # opponent_features = {}
-
                 # get discrete action and continuous parameters
                 act, act_param, all_actions, all_action_parameters = self.agent.act(obs)
                 action = self.mid_action(act, act_param)
@@ -430,7 +321,6 @@ class Learner(object):
                     success1 = True
 
                     episode_reward += reward
-                    # env.render()
 
                     if terminal:
                         break
@@ -477,7 +367,6 @@ class Learner(object):
 
 
 if __name__ == '__main__':
-    # mpi_fork(1)  # run parallel code with mpi
     parser = argparse.ArgumentParser()
     parser.add_argument('--agent-type', type=str, default='PDDPG')
     parser.add_argument('--player', type=str, default='offense')
