@@ -14,7 +14,18 @@ WIP (Work In Progress): multi-agent coordination, self-play, co-evolution strate
 
 2v2 win rate (red): 50% in 15k episodes
 
-## Run
+## Setting
+
+### Reward function
++1 if goal, else 0 (sparse reward)
+
+### Offense action space
+The same as [MAPQN](https://arxiv.org/abs/1903.04959), 3 mid-level parameterized actions (kickto, moveto, dribbleto)
+ and a discrete high-level action (shoot) for offense players.
+
+## Examples
+
+You can adjust the number of players in training and evaluation according to the examples below.
 
 ### 1v0
 
