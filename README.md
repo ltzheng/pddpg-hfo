@@ -1,20 +1,14 @@
 # Half Field Offense in Robocup 2D Soccer with reinforcement learning
 
-WIP (Work In Progress): multi-agent coordination, self-play, co-evolution strategy, and ad-hoc teamplay.
+WIP (Work In Progress): multi-agent coordination, self-play autocurricula, co-evolution strategy, and ad-hoc teamplay.
 
 ## Results
 
-### win rate
+### 1v1
+  
+  ![](figs/1v1captured.png)
 
-![](figs/tensorboard.png)
-
-- 1v0: 90% in 4k episodes
-
-- 1v1: 70% in 5k episodes
-
-- 2v1: 70% in 15k episodes
-
-- 2v2: 50% in 20k episodes
+  ![](figs/1v1goal.png)
 
 ## Setting
 
@@ -22,8 +16,13 @@ WIP (Work In Progress): multi-agent coordination, self-play, co-evolution strate
 +1 if goal, else 0 (sparse reward)
 
 ### Offense action space
-The same as [MAPQN](https://arxiv.org/abs/1903.04959), 3 mid-level parameterized actions (kickto, moveto, dribbleto)
- and a discrete high-level action (shoot) for offense players.
+
+Same as [MAPQN](https://arxiv.org/abs/1903.04959), there are 3 mid-level parameterized actions (kick to, move to, dribble to)
+ and a discrete high-level action (shoot) for offense players to choose.
+
+### Observation space
+
+Low level features in HFO.
 
 ## Examples
 
@@ -84,7 +83,7 @@ If this repo helped you, please consider citing.
 
 ## Reference
 
-The code in this repo has refered to the code of [HFO](https://github.com/LARG/HFO),
+The code in this repo has refered to [HFO](https://github.com/LARG/HFO),
 [MP-DQN](https://github.com/cycraig/MP-DQN), 
-[PA-DDPG Hausknecht & Stone 2016](https://arxiv.org/abs/1511.04143),
+[PA-DDPG](https://arxiv.org/abs/1511.04143),
 [gym-soccer](https://github.com/openai/gym-soccer). Many thanks!
