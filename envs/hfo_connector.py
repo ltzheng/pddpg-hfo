@@ -84,7 +84,7 @@ class HFOConnector(object):
         if offense_agents:
             cmd += ' --offense-agents %i' % offense_agents
         if defense_agents:
-            cmd += ' --defense-agents %i' % offense_agents
+            cmd += ' --defense-agents %i' % defense_agents
         if not start_viewer:
             cmd += ' --headless'
         if not sync_mode:
