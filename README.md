@@ -4,15 +4,17 @@ WIP (Work In Progress): multi-agent coordination, self-play, co-evolution strate
 
 ## Results
 
+### win rate
+
 ![](figs/tensorboard.png)
 
-1v0 win rate (orange): 90% in 4k episodes
+- 1v0: 90% in 4k episodes
 
-1v1 win rate (blue): 70% in 5k episodes
+- 1v1: 70% in 5k episodes
 
-2v1 win rate (green): 70% in 10k episodes
+- 2v1: 70% in 15k episodes
 
-2v2 win rate (red): 50% in 15k episodes
+- 2v2: 50% in 20k episodes
 
 ## Setting
 
