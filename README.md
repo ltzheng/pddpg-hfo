@@ -4,13 +4,19 @@ WIP (Work In Progress): multi-agent coordination, self-play autocurricula, co-ev
 
 ## Results
 
-### 1v1
+### 1v1 against world champion [HELIOS](https://en.wikipedia.org/wiki/RoboCup_2D_Soccer_Simulation_League)
   
-  ![](figs/1v1captured.png)
+  ![](figs/1v1.png)
 
-  ![](figs/1v1goal.png)
+### 2v1 against HELIOS
+
+  ![](figs/2v1.png)
 
 ## Setting
+
+### Algorithm
+
+[PA-DDPG](https://arxiv.org/abs/1511.04143)
 
 ### Reward function
 +1 if goal, else 0 (sparse reward)
