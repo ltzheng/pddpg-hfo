@@ -1,5 +1,7 @@
 # Half Field Offense in Robocup 2D Soccer with reinforcement learning
 
+![](figs/2v2.gif)
+
 WIP (Work In Progress): multi-agent coordination, self-play autocurricula, co-evolution strategy, and ad-hoc teamplay.
 
 ## Results
