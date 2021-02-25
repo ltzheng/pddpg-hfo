@@ -4,7 +4,10 @@ WIP (Work In Progress): multi-agent coordination, self-play autocurricula, co-ev
 
 ## Results
 
-### 1v1 against world champion [HELIOS](https://en.wikipedia.org/wiki/RoboCup_2D_Soccer_Simulation_League)
+- Evaluation frequency: every 500 episodes
+- Evaluation length: 1k episodes
+
+### 1v1 against the world champion [HELIOS](https://en.wikipedia.org/wiki/RoboCup_2D_Soccer_Simulation_League)
   
   ![](figs/1v1.png)
 
@@ -12,11 +15,15 @@ WIP (Work In Progress): multi-agent coordination, self-play autocurricula, co-ev
 
   ![](figs/2v1.png)
 
+### 2v2 against HELIOS
+
+  ![](figs/2v2.png)
+
 ## Setting
 
 ### Algorithm
 
-[PA-DDPG](https://arxiv.org/abs/1511.04143)
+Independent [PA-DDPG](https://arxiv.org/abs/1511.04143), i.e., there is no centralized critic or communication. Each agent acts asynchronously. Multi-agent cooperation can be implemented using redis or ray.
 
 ### Reward function
 +1 if goal, else 0 (sparse reward)
@@ -32,51 +39,46 @@ Low level features in HFO.
 
 ## Examples
 
-You can adjust the number of players in training and evaluation according to the examples below.
+Use command ```--help``` for more parameter settings.
 
-### 1v0
+### Connect to hfo-server
+You can adjust the number of players in training and evaluation accordingly (e.g. for self-play).
 
-To reproduce PDDPG 1v0 training results, run
-```bash
-python connect.py --offense-agents 1 --defense-agents 0 --defense-npcs 1 --server-port 6000
-python learner.py --tensorboard-dir agent1 --save-dir agent1
-```
-
-### 1v1
-
-To reproduce PDDPG 1v1 training results, run
-```bash
-python connect.py --offense-agents 1 --defense-agents 0 --defense-npcs 1 --server-port 6000
-python learner.py --tensorboard-dir agent1 --save-dir agent1
-```
-
-### 2v1
-
-To reproduce PDDPG 2v1 training results, run
 ```bash
 python connect.py --offense-agents 2 --defense-agents 0 --defense-npcs 1 --server-port 6000
-python learner.py --tensorboard-dir agent1 --save-dir agent1
-python learner.py --tensorboard-dir agent2 --save-dir agent2
 ```
 
-### 2v2
+(optional)
+```bash
+redis-server
+```
 
-To reproduce PDDPG 2v2 training results, run
+### Training
+
+Start a learner for an agent:
+
+```bash
+python learner.py --tensorboard-dir agent1 --save-dir agent1
+```
+
+### Evaluation
+
+Start an evaluator for an agent:
+
+```bash
+python evaluator.py --tensorboard-dir agent1 --save-dir agent1 --episodes 20000
+```
+
+### 2v2 example
+
+PDDPG 2v2 training:
 ```bash
 python connect.py --offense-agents 2 --defense-agents 0 --defense-npcs 2 --server-port 6000
 python learner.py --tensorboard-dir agent1 --save-dir agent1
 python learner.py --tensorboard-dir agent2 --save-dir agent2
 ```
 
-### Evaluation
-
-To evaluate trained 1v1 model, run below after training
-```bash
-python connect.py --offense-agents 1 --defense-agents 0 --defense-npcs 1 --server-port 6000
-python evaluator.py --tensorboard-dir agent1 --save-dir agent1
-```
-
-To evaluate PDDPG 2v2 model, run below after training
+Evaluate PDDPG 2v2 model:
 ```bash
 python connect.py --offense-agents 2 --defense-agents 0 --defense-npcs 2 --server-port 6000
 python evaluator.py --tensorboard-dir agent1 --save-dir agent1
