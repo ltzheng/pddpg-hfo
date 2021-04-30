@@ -2,7 +2,27 @@
 
 ![](figs/2v2.gif)
 
-WIP (Work In Progress): multi-agent coordination, self-play autocurricula, co-evolution strategy, and ad-hoc teamplay.
+## Framework
+
+### Algorithm
+
+Independent [PA-DDPG](https://arxiv.org/abs/1511.04143), i.e., there is no centralized critic or communication. Each agent acts asynchronously. Multi-agent scenarios can be implemented using redis.
+
+### Reward function
++1 if goal, else 0 (sparse reward)
+
+### Offense action space
+
+Similar to [MAPQN](https://arxiv.org/abs/1903.04959), there are 3 mid-level parameterized actions (kick to, move to, dribble to)
+ and a discrete high-level action (shoot) for offense players to choose.
+
+### Observation space
+
+Low level features in HFO.
+
+### Modules
+
+![](figs/framework.png)
 
 ## Results
 
@@ -21,24 +41,6 @@ WIP (Work In Progress): multi-agent coordination, self-play autocurricula, co-ev
 
   ![](figs/2v2.png)
 
-## Setting
-
-### Algorithm
-
-Independent [PA-DDPG](https://arxiv.org/abs/1511.04143), i.e., there is no centralized critic or communication. Each agent acts asynchronously. Multi-agent cooperation can be implemented using redis or ray.
-
-### Reward function
-+1 if goal, else 0 (sparse reward)
-
-### Offense action space
-
-Same as [MAPQN](https://arxiv.org/abs/1903.04959), there are 3 mid-level parameterized actions (kick to, move to, dribble to)
- and a discrete high-level action (shoot) for offense players to choose.
-
-### Observation space
-
-Low level features in HFO.
-
 ## Examples
 
 Use command ```--help``` for more parameter settings.
@@ -48,10 +50,6 @@ You can adjust the number of players in training and evaluation accordingly (e.g
 
 ```bash
 python connect.py --offense-agents 2 --defense-agents 0 --defense-npcs 1 --server-port 6000
-```
-
-(optional)
-```bash
 redis-server
 ```
 
@@ -89,11 +87,11 @@ python evaluator.py --tensorboard-dir agent2 --save-dir agent2
 
 ## Citing
 
-If this repo helped you, please consider citing.
+If this repo helps you, please star it.
 
 ## Reference
 
 The code in this repo has refered to [HFO](https://github.com/LARG/HFO),
 [MP-DQN](https://github.com/cycraig/MP-DQN), 
 [PA-DDPG](https://arxiv.org/abs/1511.04143),
-[gym-soccer](https://github.com/openai/gym-soccer). Many thanks!
+[gym-soccer](https://github.com/openai/gym-soccer).
